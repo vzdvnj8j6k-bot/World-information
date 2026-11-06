@@ -1,0 +1,12 @@
+{
+  "name": "world-hub",
+  "version": "1.0.0",
+  "private": true,
+  "description": "世界のニュース・論文・百科事典をひとつの画面で検索できるサイト",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

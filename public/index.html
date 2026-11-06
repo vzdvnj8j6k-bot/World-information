@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>World Hub</title>
+<meta name="description" content="世界のニュース・論文・百科事典をひとつの画面で検索">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%232f6fdf'/><path d='M2 16h28M16 2c5 4 5 24 0 28M16 2c-5 4-5 24 0 28' stroke='white' stroke-width='2' fill='none'/></svg>">
+<style>
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --text: #1b1f27; --muted: #626b7a; --line: #e3e6eb;
+  --accent: #2f6fdf; --accent-soft: #e8effc;
+  --news: #c2410c; --news-soft: #fdeee6; --paper: #047857; --paper-soft: #e3f5ee; --wiki: #6d28d9; --wiki-soft: #efe8fc;
+  --err: #b91c1c; --shadow: 0 1px 2px rgba(15,23,42,.06);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1218; --panel: #171b23; --text: #e6e8ec; --muted: #9aa3b2; --line: #2a303b;
+    --accent: #6d9cf5; --accent-soft: #1d2a44;
+    --news: #fb923c; --news-soft: #3a2316; --paper: #34d399; --paper-soft: #12302a; --wiki: #b794f6; --wiki-soft: #2a1f42;
+    --err: #f87171; --shadow: none;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1218; --panel: #171b23; --text: #e6e8ec; --muted: #9aa3b2; --line: #2a303b;
+  --accent: #6d9cf5; --accent-soft: #1d2a44;
+  --news: #fb923c; --news-soft: #3a2316; --paper: #34d399; --paper-soft: #12302a; --wiki: #b794f6; --wiki-soft: #2a1f42;
+  --err: #f87171; --shadow: none;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--text); font: 15px/1.6 "Hiragino Sans", "Yu Gothic UI", "Meiryo", system-ui, sans-serif; }
+a { color: inherit; }
+button, select, input { font: inherit; color: inherit; }
+
+header { position: sticky; top: 0; z-index: 10; background: var(--panel); border-bottom: 1px solid var(--line); }
+.bar { max-width: 1180px; margin: 0 auto; padding: 12px 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 18px; text-decoration: none; white-space: nowrap; }
+.logo svg { width: 26px; height: 26px; }
+form.search { flex: 1 1 380px; display: flex; gap: 8px; }
+form.search input { flex: 1; min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); outline: none; }
+form.search input:focus { border-color: var(--accent); }
+.btn { padding: 9px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); cursor: pointer; white-space: nowrap; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+select.btn { padding-right: 8px; }
+.tabs { max-width: 1180px; margin: 0 auto; padding: 0 16px; display: flex; gap: 4px; overflow-x: auto; }
+.tab { padding: 8px 14px; border: none; background: none; border-bottom: 2px solid transparent; cursor: pointer; color: var(--muted); white-space: nowrap; }
+.tab.on { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+.tab .n { font-size: 12px; margin-left: 4px; opacity: .8; }
+
+main { max-width: 1180px; margin: 0 auto; padding: 16px; display: grid; grid-template-columns: 250px 1fr; gap: 20px; }
+aside .box { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; box-shadow: var(--shadow); position: sticky; top: 120px; }
+aside h3 { margin: 4px 4px 8px; font-size: 13px; color: var(--muted); font-weight: 600; }
+.src { display: flex; align-items: center; gap: 8px; width: 100%; padding: 6px 8px; border: none; background: none; border-radius: 8px; cursor: pointer; text-align: left; font-size: 13.5px; }
+.src:hover { background: var(--bg); }
+.src.off { opacity: .45; }
+.src .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.src .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.src .st { font-size: 12px; color: var(--muted); }
+.src .st.err { color: var(--err); }
+.spin { display: inline-block; width: 11px; height: 11px; border: 2px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: sp .8s linear infinite; }
+@keyframes sp { to { transform: rotate(360deg); } }
+.hint { font-size: 12px; color: var(--muted); margin: 10px 4px 0; line-height: 1.5; }
+
+.tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.tools .info { flex: 1; color: var(--muted); font-size: 13px; min-width: 200px; }
+.tools .info b { color: var(--text); }
+
+.panel { background: var(--wiki-soft); border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; }
+.panel h4 { margin: 0 0 6px; font-size: 13px; color: var(--wiki); }
+.panel .w { margin: 6px 0; }
+.panel .w a { font-weight: 600; }
+.panel .w p { margin: 2px 0 0; font-size: 13.5px; color: var(--muted); }
+
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; box-shadow: var(--shadow); }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 12.5px; color: var(--muted); }
+.badge { font-size: 11.5px; font-weight: 700; padding: 1px 8px; border-radius: 99px; }
+.badge.news { color: var(--news); background: var(--news-soft); }
+.badge.paper { color: var(--paper); background: var(--paper-soft); }
+.badge.wiki { color: var(--wiki); background: var(--wiki-soft); }
+.card h2 { font-size: 16.5px; line-height: 1.45; margin: 6px 0 4px; font-weight: 650; }
+.card h2 a { text-decoration: none; }
+.card h2 a:hover { text-decoration: underline; color: var(--accent); }
+.card .orig { font-size: 12.5px; color: var(--muted); margin: -2px 0 4px; }
+.card p.sum { margin: 4px 0 0; font-size: 14px; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.card p.sum.open { -webkit-line-clamp: unset; }
+.card .au { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+.acts { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.act { font-size: 12.5px; padding: 3px 10px; border: 1px solid var(--line); border-radius: 99px; background: none; cursor: pointer; text-decoration: none; color: var(--muted); }
+.act:hover { color: var(--accent); border-color: var(--accent); }
+.act.on { color: #b45309; border-color: #f59e0b; }
+.grade { font-size: 12px; font-weight: 800; width: 22px; height: 22px; display: inline-grid; place-items: center; border-radius: 6px; cursor: help; flex: none; }
+.grade.A { color: #fff; background: #15803d; }
+.grade.B { color: #fff; background: #ca8a04; }
+.grade.C { color: #fff; background: #6b7280; }
+.legend { font-size: 12px; color: var(--muted); margin: 12px 4px 0; line-height: 1.7; border-top: 1px solid var(--line); padding-top: 10px; }
+.legend .grade { width: 18px; height: 18px; font-size: 11px; margin-right: 4px; vertical-align: -3px; }
+.empty { text-align: center; color: var(--muted); padding: 48px 16px; }
+.more { display: block; margin: 16px auto; }
+
+@media (max-width: 820px) {
+  .legend { display: none; }
+  main { grid-template-columns: 1fr; }
+  aside .box { position: static; }
+  aside .list { display: flex; flex-wrap: wrap; gap: 4px; }
+  .src { width: auto; border: 1px solid var(--line); border-radius: 99px; padding: 4px 10px; }
+  .src .nm { max-width: 150px; }
+  .hint { display: none; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <a class="logo" href="./" id="home">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="var(--accent)"/><path d="M2 16h28M16 2c5 4 5 24 0 28M16 2c-5 4-5 24 0 28M5 8.5h22M5 23.5h22" stroke="#fff" stroke-width="1.6" fill="none"/></svg>
+      World Hub
+    </a>
+    <form class="search" id="form">
+      <input id="q" type="search" placeholder="キーワードで世界中のニュース・論文・百科事典を検索（例: 量子コンピュータ）" autocomplete="off">
+      <button class="btn primary" type="submit">検索</button>
+    </form>
+    <select class="btn" id="lang" title="Googleニュースの地域">
+      <option value="ja">🇯🇵 日本</option>
+      <option value="en">🇺🇸 アメリカ</option>
+      <option value="en-GB">🇬🇧 イギリス</option>
+      <option value="in">🇮🇳 インド</option>
+      <option value="zh">🇹🇼 台湾</option>
+      <option value="ko">🇰🇷 韓国</option>
+      <option value="fr">🇫🇷 フランス</option>
+      <option value="de">🇩🇪 ドイツ</option>
+      <option value="es">🇲🇽 中南米</option>
+    </select>
+  </div>
+  <nav class="tabs" id="tabs"></nav>
+</header>
+
+<main>
+  <aside>
+    <div class="box">
+      <h3>情報源（クリックで表示切替）</h3>
+      <div class="list" id="srcs"></div>
+      <div class="legend">
+        <b>信頼度ランクの基準</b><br>
+        📰 ニュース・百科事典: 配信元サイトの世界アクセス数順位<br>
+        <span class="grade A">A</span>5,000位以内<br>
+        <span class="grade B">B</span>5万位以内<br>
+        <span class="grade C">C</span>5万位より下・圏外<br>
+        📄 論文: 被引用数<br>
+        <span class="grade A">A</span>100回以上 <span class="grade B">B</span>10回以上 <span class="grade C">C</span>未満・未査読<br>
+        <span style="opacity:.85">※アクセス数・引用数は人気の目安で、内容の正しさを保証するものではありません。</span>
+      </div>
+      <p class="hint">日本語で検索すると、英語の論文やニュースは自動で英訳したキーワードで探します。</p>
+    </div>
+  </aside>
+  <section>
+    <div class="tools">
+      <div class="info" id="info"></div>
+      <select class="btn" id="sort">
+        <option value="mix">バランス良く表示</option>
+        <option value="new">新しい順</option>
+        <option value="rank">信頼度順</option>
+      </select>
+      <select class="btn" id="minGrade" title="信頼度で絞り込み">
+        <option value="C">信頼度: すべて</option>
+        <option value="B">B以上</option>
+        <option value="A">Aのみ</option>
+      </select>
+      <button class="btn" id="trAll" title="表示中の見出しと要約を日本語に翻訳">🌐 日本語に翻訳</button>
+    </div>
+    <div id="panel"></div>
+    <div id="list"></div>
+    <button class="btn more" id="more" hidden>もっと見る</button>
+  </section>
+</main>
+
+<script>
+const TYPES = { news: 'ニュース', paper: '論文', wiki: '百科事典' };
+const COLORS = { news: 'var(--news)', paper: 'var(--paper)', wiki: 'var(--wiki)' };
+const PAGE = 40;
+
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+
+const S = {
+  sources: [], results: {}, status: {}, off: new Set(store.get('wh-off', [])),
+  q: '', tab: 'all', lang: store.get('wh-lang', 'ja'), sort: store.get('wh-sort', 'mix'), minGrade: store.get('wh-min', 'C'),
+  shown: PAGE, saved: store.get('wh-saved', []), tr: {}, qEn: '', runId: 0,
+};
+const $ = (id) => document.getElementById(id);
+const esc = (s = '') => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function ago(iso) {
+  if (!iso) return '';
+  const d = new Date(iso), diff = (Date.now() - d) / 1000;
+  if (diff < 0) return d.toLocaleDateString('ja-JP');
+  if (diff < 3600) return Math.max(1, Math.floor(diff / 60)) + '分前';
+  if (diff < 86400) return Math.floor(diff / 3600) + '時間前';
+  if (diff < 86400 * 30) return Math.floor(diff / 86400) + '日前';
+  return d.toLocaleDateString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+async function init() {
+  const r = await fetch('api/search').then((r) => r.json());
+  S.sources = r.sources;
+  const p = new URLSearchParams(location.search);
+  S.q = p.get('q') || '';
+  S.tab = p.get('tab') || 'all';
+  $('q').value = S.q;
+  $('lang').value = S.lang;
+  $('sort').value = S.sort;
+  $('minGrade').value = S.minGrade;
+  run(false);
+}
+
+function run(push = true) {
+  const id = ++S.runId;
+  S.results = {}; S.status = {}; S.shown = PAGE; S.tr = {}; S.qEn = '';
+  if (push) {
+    const p = new URLSearchParams();
+    if (S.q) p.set('q', S.q);
+    if (S.tab !== 'all') p.set('tab', S.tab);
+    history.pushState(null, '', p.toString() ? '?' + p : location.pathname);
+  }
+  document.title = S.q ? `${S.q} - World Hub` : 'World Hub';
+  for (const s of S.sources) {
+    S.status[s.id] = { loading: true };
+    const url = `api/search?source=${s.id}&q=${encodeURIComponent(S.q)}&lang=${S.lang}`;
+    fetch(url)
+      .then((r) => r.json())
+      .then((d) => {
+        if (id !== S.runId) return;
+        S.results[s.id] = d.items || [];
+        S.status[s.id] = { count: d.count || 0, error: d.error, ms: d.ms };
+        if (d.qEn) S.qEn = d.qEn;
+        render();
+      })
+      .catch((e) => {
+        if (id !== S.runId) return;
+        S.status[s.id] = { error: '通信エラー' };
+        render();
+      });
+  }
+  render();
+}
+
+function allItems() {
+  // 情報源ごとのリストを、重複URLを除いて結合
+  const seen = new Set(), lists = [];
+  for (const s of S.sources) {
+    if (S.off.has(s.id) || !S.results[s.id]) continue;
+    if (S.tab !== 'all' && S.tab !== 'saved' && s.type !== S.tab) continue;
+    const l = [];
+    for (const it of S.results[s.id]) {
+      if (!passGrade(it)) continue;
+      const k = it.url.replace(/^https?:\/\/(www\.)?/, '').replace(/[?#].*$/, '');
+      if (seen.has(k)) continue;
+      seen.add(k); l.push(it);
+    }
+    lists.push(l);
+  }
+  let out = [];
+  if (S.sort === 'rank') {
+    const order = { A: 0, B: 1, C: 2 };
+    out = lists.flat().sort((a, b) => order[a.rank?.grade || 'C'] - order[b.rank?.grade || 'C'] || (b.date || '').localeCompare(a.date || ''));
+  } else if (S.sort === 'new') {
+    out = lists.flat().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  } else {
+    // 1つの情報源に偏らないよう順番に1件ずつ取り出す
+    const idx = lists.map(() => 0);
+    let added = true;
+    while (added) {
+      added = false;
+      lists.forEach((l, i) => { if (idx[i] < l.length) { out.push(l[idx[i]++]); added = true; } });
+    }
+  }
+  return out;
+}
+
+function passGrade(it) {
+  const g = it.rank?.grade || 'C';
+  return S.minGrade === 'C' || (S.minGrade === 'B' ? g !== 'C' : g === 'A');
+}
+
+function counts() {
+  const c = { all: 0, news: 0, paper: 0, wiki: 0, saved: S.saved.length };
+  for (const s of S.sources) {
+    if (S.off.has(s.id)) continue;
+    const n = (S.results[s.id] || []).filter(passGrade).length;
+    c[s.type] += n; c.all += n;
+  }
+  return c;
+}
+
+function render() {
+  const c = counts();
+  const tabs = [['all', 'すべて'], ['news', '📰 ニュース'], ['paper', '📄 論文'], ['wiki', '📚 百科事典'], ['saved', '⭐ 保存済み']];
+  $('tabs').innerHTML = tabs.map(([k, l]) => `<button class="tab ${S.tab === k ? 'on' : ''}" data-tab="${k}">${l}<span class="n">${c[k] || ''}</span></button>`).join('');
+
+  $('srcs').innerHTML = S.sources.map((s) => {
+    const st = S.status[s.id] || {};
+    const stat = st.loading ? '<span class="spin"></span>' : st.error ? `<span class="st err" title="${esc(st.error)}">エラー</span>` : `<span class="st">${st.count ?? ''}</span>`;
+    return `<button class="src ${S.off.has(s.id) ? 'off' : ''}" data-src="${s.id}" title="${esc(s.name)}"><span class="dot" style="background:${COLORS[s.type]}"></span><span class="nm">${esc(s.name)}</span>${stat}</button>`;
+  }).join('');
+
+  const loading = Object.values(S.status).filter((s) => s.loading).length;
+  let items;
+  if (S.tab === 'saved') items = S.saved.slice().reverse().filter(passGrade);
+  else items = allItems();
+
+  const head = S.tab === 'saved' ? '保存した記事・論文'
+    : S.q ? `「<b>${esc(S.q)}</b>」の検索結果` : '<b>いま世界で話題</b>のニュースと新しい論文';
+  $('info').innerHTML = `${head} — ${items.length}件${S.qEn ? `（英語キーワード: ${esc(S.qEn)}）` : ''}${loading ? ` · 取得中 ${loading}` : ''}`;
+
+  // 知識パネル(すべてタブで検索時に百科事典の上位を表示)
+  const wiki = S.tab === 'all' && S.q ? ['wikija', 'wikien'].filter((id) => !S.off.has(id)).flatMap((id) => (S.results[id] || []).slice(0, 1)) : [];
+  $('panel').innerHTML = wiki.length ? `<div class="panel"><h4>📚 百科事典で調べる</h4>${wiki.map((w) => `<div class="w"><a href="${esc(w.url)}" target="_blank" rel="noopener">${esc(w.title)}</a> <span class="meta">${esc(w.publisher)}</span><p>${esc(S.tr[w.url]?.summary || w.summary)}</p></div>`).join('')}</div>` : '';
+  if (wiki.length) items = items.filter((it) => !wiki.includes(it));
+
+  const shown = items.slice(0, S.shown);
+  $('list').innerHTML = shown.length ? shown.map(card).join('')
+    : `<div class="empty">${loading ? '<span class="spin"></span> 世界中から集めています…' : S.tab === 'saved' ? '⭐ を押した記事がここに保存されます' : '見つかりませんでした。別のキーワードを試してください。'}</div>`;
+  $('more').hidden = items.length <= S.shown;
+  S.visible = shown;
+}
+
+function card(it) {
+  const saved = S.saved.some((s) => s.url === it.url);
+  const tr = S.tr[it.url];
+  const src = S.sources.find((s) => s.id === it.sourceId);
+  return `<article class="card">
+    <div class="meta">
+      ${it.rank ? `<span class="grade ${it.rank.grade}" title="信頼度 ${it.rank.grade}: ${esc(it.rank.basis)}">${it.rank.grade}</span>` : ''}
+      <span class="badge ${it.type}">${TYPES[it.type]}</span>
+      <span>${esc(it.publisher || src?.name || '')}</span>
+      ${it.country ? `<span>📍${esc(it.country)}</span>` : ''}
+      ${it.date ? `<span title="${esc(new Date(it.date).toLocaleString('ja-JP'))}">${ago(it.date)}</span>` : ''}
+      ${it.meta ? `<span>${esc(it.meta)}</span>` : ''}
+      ${it.rank ? `<span>${esc(it.rank.basis)}</span>` : ''}
+    </div>
+    <h2><a href="${esc(it.url)}" target="_blank" rel="noopener">${esc(tr?.title || it.title)}</a></h2>
+    ${tr && tr.title !== it.title ? `<div class="orig">原文: ${esc(it.title)}</div>` : ''}
+    ${it.summary ? `<p class="sum" data-sum>${esc(tr?.summary || it.summary)}</p>` : ''}
+    ${it.authors?.length ? `<div class="au">👤 ${esc(it.authors.join(', '))}${it.authors.length >= 6 ? ' ほか' : ''}</div>` : ''}
+    <div class="acts">
+      <button class="act ${saved ? 'on' : ''}" data-save="${esc(it.url)}">${saved ? '★ 保存済み' : '☆ 保存'}</button>
+      ${tr ? '' : `<button class="act" data-tr="${esc(it.url)}">🌐 翻訳</button>`}
+      ${it.summary && it.summary.length > 160 ? '<button class="act" data-expand>続きを読む</button>' : ''}
+      ${it.pdf ? `<a class="act" href="${esc(it.pdf)}" target="_blank" rel="noopener">PDF</a>` : ''}
+      ${it.discuss ? `<a class="act" href="${esc(it.discuss)}" target="_blank" rel="noopener">議論を見る</a>` : ''}
+      <a class="act" href="https://translate.google.com/translate?sl=auto&tl=ja&u=${encodeURIComponent(it.url)}" target="_blank" rel="noopener">ページごと翻訳</a>
+    </div>
+  </article>`;
+}
+
+function findItem(url) {
+  for (const l of Object.values(S.results)) { const f = l.find((i) => i.url === url); if (f) return f; }
+  return S.saved.find((i) => i.url === url);
+}
+
+async function translateItems(items) {
+  items = items.filter((it) => !S.tr[it.url]);
+  if (!items.length) return;
+  const texts = items.flatMap((it) => [it.title, it.summary || '']);
+  const r = await fetch('api/translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ texts, to: 'ja' }) }).then((r) => r.json());
+  items.forEach((it, i) => (S.tr[it.url] = { title: r.texts[i * 2], summary: r.texts[i * 2 + 1] }));
+  render();
+}
+
+// ---------- イベント ----------
+$('form').addEventListener('submit', (e) => { e.preventDefault(); S.q = $('q').value.trim(); if (S.tab === 'saved') S.tab = 'all'; run(); });
+$('home').addEventListener('click', (e) => { e.preventDefault(); S.q = ''; $('q').value = ''; S.tab = 'all'; run(); });
+$('lang').addEventListener('change', () => { S.lang = $('lang').value; store.set('wh-lang', S.lang); run(); });
+$('sort').addEventListener('change', () => { S.sort = $('sort').value; store.set('wh-sort', S.sort); render(); });
+$('minGrade').addEventListener('change', () => { S.minGrade = $('minGrade').value; store.set('wh-min', S.minGrade); S.shown = PAGE; render(); });
+$('more').addEventListener('click', () => { S.shown += PAGE; render(); });
+$('trAll').addEventListener('click', async (e) => {
+  const b = e.currentTarget; b.disabled = true; b.textContent = '翻訳中…';
+  const wikiTop = ['wikija', 'wikien'].flatMap((id) => (S.results[id] || []).slice(0, 1));
+  try { await translateItems([...(S.visible || []), ...wikiTop].filter((it) => it.lang !== 'ja')); }
+  finally { b.disabled = false; b.textContent = '🌐 日本語に翻訳'; }
+});
+$('tabs').addEventListener('click', (e) => {
+  const t = e.target.closest('[data-tab]'); if (!t) return;
+  S.tab = t.dataset.tab; S.shown = PAGE;
+  const p = new URLSearchParams(location.search);
+  S.tab === 'all' ? p.delete('tab') : p.set('tab', S.tab);
+  history.replaceState(null, '', p.toString() ? '?' + p : location.pathname);
+  render();
+});
+$('srcs').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-src]'); if (!b) return;
+  const id = b.dataset.src;
+  S.off.has(id) ? S.off.delete(id) : S.off.add(id);
+  store.set('wh-off', [...S.off]);
+  render();
+});
+$('list').addEventListener('click', (e) => {
+  const sv = e.target.closest('[data-save]');
+  if (sv) {
+    const url = sv.dataset.save;
+    const i = S.saved.findIndex((s) => s.url === url);
+    if (i >= 0) S.saved.splice(i, 1); else { const it = findItem(url); if (it) S.saved.push(it); }
+    store.set('wh-saved', S.saved); render(); return;
+  }
+  const tr = e.target.closest('[data-tr]');
+  if (tr) { tr.textContent = '翻訳中…'; const it = findItem(tr.dataset.tr); if (it) translateItems([it]); return; }
+  const ex = e.target.closest('[data-expand]');
+  if (ex) { const p = ex.closest('.card').querySelector('[data-sum]'); p.classList.toggle('open'); ex.textContent = p.classList.contains('open') ? '閉じる' : '続きを読む'; }
+});
+window.addEventListener('popstate', () => {
+  const p = new URLSearchParams(location.search);
+  S.q = p.get('q') || ''; S.tab = p.get('tab') || 'all'; $('q').value = S.q; run(false);
+});
+init();
+</script>
+</body>
+</html>
