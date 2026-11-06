@@ -10,21 +10,21 @@
 :root {
   --bg: #f6f7f9; --panel: #ffffff; --text: #1b1f27; --muted: #626b7a; --line: #e3e6eb;
   --accent: #2f6fdf; --accent-soft: #e8effc;
-  --news: #c2410c; --news-soft: #fdeee6; --paper: #047857; --paper-soft: #e3f5ee; --wiki: #6d28d9; --wiki-soft: #efe8fc;
+  --news: #c2410c; --news-soft: #fdeee6; --paper: #047857; --paper-soft: #e3f5ee; --wiki: #6d28d9; --wiki-soft: #efe8fc; --trivia: #0e7490; --trivia-soft: #e0f4f8;
   --err: #b91c1c; --shadow: 0 1px 2px rgba(15,23,42,.06);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #0f1218; --panel: #171b23; --text: #e6e8ec; --muted: #9aa3b2; --line: #2a303b;
     --accent: #6d9cf5; --accent-soft: #1d2a44;
-    --news: #fb923c; --news-soft: #3a2316; --paper: #34d399; --paper-soft: #12302a; --wiki: #b794f6; --wiki-soft: #2a1f42;
+    --news: #fb923c; --news-soft: #3a2316; --paper: #34d399; --paper-soft: #12302a; --wiki: #b794f6; --wiki-soft: #2a1f42; --trivia: #22d3ee; --trivia-soft: #11303a;
     --err: #f87171; --shadow: none;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0f1218; --panel: #171b23; --text: #e6e8ec; --muted: #9aa3b2; --line: #2a303b;
   --accent: #6d9cf5; --accent-soft: #1d2a44;
-  --news: #fb923c; --news-soft: #3a2316; --paper: #34d399; --paper-soft: #12302a; --wiki: #b794f6; --wiki-soft: #2a1f42;
+  --news: #fb923c; --news-soft: #3a2316; --paper: #34d399; --paper-soft: #12302a; --wiki: #b794f6; --wiki-soft: #2a1f42; --trivia: #22d3ee; --trivia-soft: #11303a;
   --err: #f87171; --shadow: none;
 }
 * { box-sizing: border-box; }
@@ -79,6 +79,11 @@ aside h3 { margin: 4px 4px 8px; font-size: 13px; color: var(--muted); font-weigh
 .badge.news { color: var(--news); background: var(--news-soft); }
 .badge.paper { color: var(--paper); background: var(--paper-soft); }
 .badge.wiki { color: var(--wiki); background: var(--wiki-soft); }
+.badge.trivia { color: var(--trivia); background: var(--trivia-soft); }
+.card.has-img { display: grid; grid-template-columns: 1fr 112px; gap: 0 14px; }
+.card.has-img > .body { min-width: 0; }
+.card .thumb { width: 112px; height: 84px; object-fit: cover; border-radius: 8px; background: var(--bg); margin-top: 4px; }
+@media (max-width: 520px) { .card.has-img { grid-template-columns: 1fr 84px; } .card .thumb { width: 84px; height: 64px; } }
 .card h2 { font-size: 16.5px; line-height: 1.45; margin: 6px 0 4px; font-weight: 650; }
 .card h2 a { text-decoration: none; }
 .card h2 a:hover { text-decoration: underline; color: var(--accent); }
@@ -143,7 +148,7 @@ aside h3 { margin: 4px 4px 8px; font-size: 13px; color: var(--muted); font-weigh
       <div class="list" id="srcs"></div>
       <div class="legend">
         <b>信頼度ランクの基準</b><br>
-        📰 ニュース・百科事典: 配信元サイトの世界アクセス数順位<br>
+        📰 ニュース・百科事典・雑学: 配信元サイトの世界アクセス数順位<br>
         <span class="grade A">A</span>5,000位以内<br>
         <span class="grade B">B</span>5万位以内<br>
         <span class="grade C">C</span>5万位より下・圏外<br>
@@ -176,8 +181,8 @@ aside h3 { margin: 4px 4px 8px; font-size: 13px; color: var(--muted); font-weigh
 </main>
 
 <script>
-const TYPES = { news: 'ニュース', paper: '論文', wiki: '百科事典' };
-const COLORS = { news: 'var(--news)', paper: 'var(--paper)', wiki: 'var(--wiki)' };
+const TYPES = { news: 'ニュース', paper: '論文', wiki: '百科事典', trivia: '雑学・教養' };
+const COLORS = { news: 'var(--news)', paper: 'var(--paper)', wiki: 'var(--wiki)', trivia: 'var(--trivia)' };
 const PAGE = 40;
 
 const store = {
@@ -286,7 +291,7 @@ function passGrade(it) {
 }
 
 function counts() {
-  const c = { all: 0, news: 0, paper: 0, wiki: 0, saved: S.saved.length };
+  const c = { all: 0, news: 0, paper: 0, wiki: 0, trivia: 0, saved: S.saved.length };
   for (const s of S.sources) {
     if (S.off.has(s.id)) continue;
     const n = (S.results[s.id] || []).filter(passGrade).length;
@@ -297,7 +302,7 @@ function counts() {
 
 function render() {
   const c = counts();
-  const tabs = [['all', 'すべて'], ['news', '📰 ニュース'], ['paper', '📄 論文'], ['wiki', '📚 百科事典'], ['saved', '⭐ 保存済み']];
+  const tabs = [['all', 'すべて'], ['news', '📰 ニュース'], ['paper', '📄 論文'], ['wiki', '📚 百科事典'], ['trivia', '💡 雑学・教養'], ['saved', '⭐ 保存済み']];
   $('tabs').innerHTML = tabs.map(([k, l]) => `<button class="tab ${S.tab === k ? 'on' : ''}" data-tab="${k}">${l}<span class="n">${c[k] || ''}</span></button>`).join('');
 
   $('srcs').innerHTML = S.sources.map((s) => {
@@ -312,7 +317,7 @@ function render() {
   else items = allItems();
 
   const head = S.tab === 'saved' ? '保存した記事・論文'
-    : S.q ? `「<b>${esc(S.q)}</b>」の検索結果` : '<b>いま世界で話題</b>のニュースと新しい論文';
+    : S.q ? `「<b>${esc(S.q)}</b>」の検索結果` : '<b>いま世界で話題</b>のニュース・新しい論文・今日の雑学';
   $('info').innerHTML = `${head} — ${items.length}件${S.qEn ? `（英語キーワード: ${esc(S.qEn)}）` : ''}${loading ? ` · 取得中 ${loading}` : ''}`;
 
   // 知識パネル(すべてタブで検索時に百科事典の上位を表示)
@@ -331,7 +336,7 @@ function card(it) {
   const saved = S.saved.some((s) => s.url === it.url);
   const tr = S.tr[it.url];
   const src = S.sources.find((s) => s.id === it.sourceId);
-  return `<article class="card">
+  return `<article class="card ${it.image ? 'has-img' : ''}"><div class="body">
     <div class="meta">
       ${it.rank ? `<span class="grade ${it.rank.grade}" title="信頼度 ${it.rank.grade}: ${esc(it.rank.basis)}">${it.rank.grade}</span>` : ''}
       <span class="badge ${it.type}">${TYPES[it.type]}</span>
@@ -352,7 +357,8 @@ function card(it) {
       ${it.pdf ? `<a class="act" href="${esc(it.pdf)}" target="_blank" rel="noopener">PDF</a>` : ''}
       ${it.discuss ? `<a class="act" href="${esc(it.discuss)}" target="_blank" rel="noopener">議論を見る</a>` : ''}
       <a class="act" href="https://translate.google.com/translate?sl=auto&tl=ja&u=${encodeURIComponent(it.url)}" target="_blank" rel="noopener">ページごと翻訳</a>
-    </div>
+    </div></div>
+    ${it.image ? `<a href="${esc(it.url)}" target="_blank" rel="noopener"><img class="thumb" src="${esc(it.image)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></a>` : ''}
   </article>`;
 }
 

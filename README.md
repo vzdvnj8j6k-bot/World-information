@@ -19,6 +19,7 @@ node server.js
 | ニュース | Google ニュース（地域切替可）、NHK・BBC・Guardian・NYT・Al Jazeera・DW・France 24 のRSS、GDELT、Hacker News |
 | 論文 | OpenAlex、arXiv、PubMed |
 | 百科事典 | Wikipedia（日本語・英語） |
+| 雑学・教養 | Wikipedia（今日の秀逸な記事・今日は何の日・ランダム記事）、ナゾロジー、カラパイア、GIGAZINE、The Conversation、Smithsonian、Aeon、Atlas Obscura |
 
 日本語で検索すると、英語の情報源には自動で英訳したキーワードで検索します。
 
