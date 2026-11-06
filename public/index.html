@@ -4,129 +4,193 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>World Hub</title>
-<meta name="description" content="世界のニュース・論文・百科事典をひとつの画面で検索">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%232f6fdf'/><path d='M2 16h28M16 2c5 4 5 24 0 28M16 2c-5 4-5 24 0 28' stroke='white' stroke-width='2' fill='none'/></svg>">
+<meta name="description" content="世界のニュース・論文・百科事典・雑学をひとつの画面で">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%23b4232a'/><path d='M2 16h28M16 2c5 4 5 24 0 28M16 2c-5 4-5 24 0 28' stroke='white' stroke-width='2' fill='none'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@600;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #f6f7f9; --panel: #ffffff; --text: #1b1f27; --muted: #626b7a; --line: #e3e6eb;
-  --accent: #2f6fdf; --accent-soft: #e8effc;
-  --news: #c2410c; --news-soft: #fdeee6; --paper: #047857; --paper-soft: #e3f5ee; --wiki: #6d28d9; --wiki-soft: #efe8fc; --trivia: #0e7490; --trivia-soft: #e0f4f8;
-  --err: #b91c1c; --shadow: 0 1px 2px rgba(15,23,42,.06);
+  --bg: #ffffff; --panel: #ffffff; --soft: #f4f5f7; --text: #121418; --muted: #5d6573; --line: #e2e5ea; --rule: #121418;
+  --accent: #b4232a; --link: #1a4fb3;
+  --news: #c2410c; --paper: #047857; --wiki: #6d28d9; --trivia: #0e7490;
+  --A: #15803d; --B: #b7791f; --C: #6b7280;
+  --serif: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0f1218; --panel: #171b23; --text: #e6e8ec; --muted: #9aa3b2; --line: #2a303b;
-    --accent: #6d9cf5; --accent-soft: #1d2a44;
-    --news: #fb923c; --news-soft: #3a2316; --paper: #34d399; --paper-soft: #12302a; --wiki: #b794f6; --wiki-soft: #2a1f42; --trivia: #22d3ee; --trivia-soft: #11303a;
-    --err: #f87171; --shadow: none;
+    --bg: #101216; --panel: #16191f; --soft: #1c2028; --text: #e9ebef; --muted: #9ba3b1; --line: #2b313c; --rule: #e9ebef;
+    --accent: #f05a61; --link: #8ab4ff;
+    --news: #fb923c; --paper: #34d399; --wiki: #b794f6; --trivia: #22d3ee;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0f1218; --panel: #171b23; --text: #e6e8ec; --muted: #9aa3b2; --line: #2a303b;
-  --accent: #6d9cf5; --accent-soft: #1d2a44;
-  --news: #fb923c; --news-soft: #3a2316; --paper: #34d399; --paper-soft: #12302a; --wiki: #b794f6; --wiki-soft: #2a1f42; --trivia: #22d3ee; --trivia-soft: #11303a;
-  --err: #f87171; --shadow: none;
+  --bg: #101216; --panel: #16191f; --soft: #1c2028; --text: #e9ebef; --muted: #9ba3b1; --line: #2b313c; --rule: #e9ebef;
+  --accent: #f05a61; --link: #8ab4ff;
+  --news: #fb923c; --paper: #34d399; --wiki: #b794f6; --trivia: #22d3ee;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; }
-body { background: var(--bg); color: var(--text); font: 15px/1.6 "Hiragino Sans", "Yu Gothic UI", "Meiryo", system-ui, sans-serif; }
-a { color: inherit; }
+body { background: var(--bg); color: var(--text); font: 15px/1.6 "Hiragino Sans", "Yu Gothic UI", "Meiryo", system-ui, sans-serif; -webkit-text-size-adjust: 100%; }
+a { color: inherit; text-decoration: none; }
+a:hover .hl, a.hl:hover { text-decoration: underline; }
 button, select, input { font: inherit; color: inherit; }
+img { display: block; }
 
-header { position: sticky; top: 0; z-index: 10; background: var(--panel); border-bottom: 1px solid var(--line); }
-.bar { max-width: 1180px; margin: 0 auto; padding: 12px 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-.logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 18px; text-decoration: none; white-space: nowrap; }
-.logo svg { width: 26px; height: 26px; }
-form.search { flex: 1 1 380px; display: flex; gap: 8px; }
-form.search input { flex: 1; min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); outline: none; }
-form.search input:focus { border-color: var(--accent); }
-.btn { padding: 9px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); cursor: pointer; white-space: nowrap; }
-.btn:hover { border-color: var(--accent); }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-select.btn { padding-right: 8px; }
-.tabs { max-width: 1180px; margin: 0 auto; padding: 0 16px; display: flex; gap: 4px; overflow-x: auto; }
-.tab { padding: 8px 14px; border: none; background: none; border-bottom: 2px solid transparent; cursor: pointer; color: var(--muted); white-space: nowrap; }
-.tab.on { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
-.tab .n { font-size: 12px; margin-left: 4px; opacity: .8; }
+/* ---------- マストヘッド ---------- */
+.mast { border-bottom: 1px solid var(--line); background: var(--panel); }
+.mast-in { max-width: 1200px; margin: 0 auto; padding: 14px 16px 10px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.logo { display: flex; align-items: center; gap: 8px; }
+.logo svg { width: 30px; height: 30px; }
+.logo b { font-family: var(--serif); font-size: 24px; font-weight: 800; letter-spacing: .02em; }
+.today { color: var(--muted); font-size: 13px; white-space: nowrap; }
+form.search { flex: 1 1 320px; display: flex; max-width: 560px; margin-left: auto; }
+form.search input { flex: 1; min-width: 0; padding: 9px 14px; border: 1px solid var(--line); border-right: none; border-radius: 99px 0 0 99px; background: var(--soft); outline: none; }
+form.search input:focus { border-color: var(--accent); background: var(--panel); }
+form.search button { padding: 0 18px; border: 1px solid var(--accent); background: var(--accent); color: #fff; border-radius: 0 99px 99px 0; cursor: pointer; }
+.sel { padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); cursor: pointer; font-size: 13.5px; }
 
-main { max-width: 1180px; margin: 0 auto; padding: 16px; display: grid; grid-template-columns: 250px 1fr; gap: 20px; }
-aside .box { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; box-shadow: var(--shadow); position: sticky; top: 120px; }
-aside h3 { margin: 4px 4px 8px; font-size: 13px; color: var(--muted); font-weight: 600; }
-.src { display: flex; align-items: center; gap: 8px; width: 100%; padding: 6px 8px; border: none; background: none; border-radius: 8px; cursor: pointer; text-align: left; font-size: 13.5px; }
-.src:hover { background: var(--bg); }
-.src.off { opacity: .45; }
+/* カテゴリナビ */
+.cats { position: sticky; top: 0; z-index: 20; background: var(--panel); border-bottom: 3px solid var(--rule); }
+.cats-in { max-width: 1200px; margin: 0 auto; padding: 0 8px; display: flex; overflow-x: auto; scrollbar-width: none; }
+.cats-in::-webkit-scrollbar { display: none; }
+.cat { position: relative; padding: 11px 14px 9px; border: none; background: none; cursor: pointer; font-weight: 700; font-size: 14.5px; white-space: nowrap; color: var(--muted); }
+.cat:hover { color: var(--text); }
+.cat.on { color: var(--text); }
+.cat.on::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -3px; height: 3px; background: var(--accent); }
+.region { display: flex; align-items: center; flex: none; }
+.region button { border: 1px solid var(--line); background: var(--panel); padding: 6px 12px; margin-left: -1px; font-size: 13px; cursor: pointer; color: var(--muted); white-space: nowrap; }
+.region button:first-child { border-radius: 99px 0 0 99px; } .region button:last-child { border-radius: 0 99px 99px 0; }
+.region button.on { background: var(--rule); border-color: var(--rule); color: var(--bg); font-weight: 700; }
+.rg { font-size: 11px; padding: 0 6px; border-radius: 3px; border: 1px solid var(--line); }
+.cat .n { font-size: 11px; font-weight: 500; margin-left: 3px; color: var(--muted); }
+
+/* ---------- レイアウト ---------- */
+.wrap { max-width: 1200px; margin: 0 auto; padding: 20px 16px 48px; display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 32px; }
+.sec { margin-bottom: 32px; }
+.sec-h { display: flex; align-items: baseline; justify-content: space-between; border-top: 2px solid var(--rule); padding-top: 8px; margin-bottom: 14px; }
+.sec-h h2 { margin: 0; font-family: var(--serif); font-size: 20px; font-weight: 800; }
+.sec-h h2 .dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 8px; vertical-align: 2px; }
+.sec-h .more { border: none; background: none; color: var(--link); cursor: pointer; font-size: 13.5px; padding: 0; }
+
+/* メタ情報・バッジ */
+.meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 12px; color: var(--muted); }
+.grade { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 4px; color: #fff; font-size: 11px; font-weight: 800; cursor: help; flex: none; }
+.grade.A { background: var(--A); } .grade.B { background: var(--B); } .grade.C { background: var(--C); }
+.kicker { font-weight: 700; font-size: 12px; }
+.kicker.news { color: var(--news); } .kicker.paper { color: var(--paper); } .kicker.wiki { color: var(--wiki); } .kicker.trivia { color: var(--trivia); }
+.star { border: none; background: none; cursor: pointer; padding: 0 2px; color: var(--muted); font-size: 14px; line-height: 1; }
+.star.on { color: #e0a100; }
+
+/* トップ記事 */
+.top { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 24px; margin-bottom: 32px; }
+.hero .img { aspect-ratio: 16 / 9; overflow: hidden; border-radius: 4px; background: var(--soft); margin-bottom: 10px; }
+.hero .img img { width: 100%; height: 100%; object-fit: cover; }
+.hero h1 { font-family: var(--serif); font-size: 27px; line-height: 1.38; margin: 6px 0 8px; font-weight: 800; }
+.hero p { margin: 0 0 8px; color: var(--muted); font-size: 14.5px; }
+.subs { display: flex; flex-direction: column; }
+.sub { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.sub:first-child { padding-top: 0; }
+.sub.noimg { grid-template-columns: 1fr; }
+.sub h3 { font-family: var(--serif); font-size: 16px; line-height: 1.45; margin: 0 0 4px; font-weight: 600; }
+.sub .th, .row .th { width: 96px; height: 64px; object-fit: cover; border-radius: 4px; background: var(--soft); }
+
+/* 見出しリスト */
+.rows { list-style: none; margin: 0; padding: 0; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+.row h3 { font-size: 15.5px; line-height: 1.5; margin: 0 0 3px; font-weight: 600; }
+.cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; }
+
+/* タイル */
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.tile .img { aspect-ratio: 3 / 2; border-radius: 4px; overflow: hidden; background: var(--soft); margin-bottom: 8px; display: grid; place-items: center; font-size: 34px; }
+.tile .img img { width: 100%; height: 100%; object-fit: cover; }
+.tile h3 { font-family: var(--serif); font-size: 15.5px; line-height: 1.45; margin: 4px 0; font-weight: 600; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.paper-card { border-top: 1px solid var(--line); padding: 12px 0; }
+.paper-card h3 { font-family: var(--serif); font-size: 16px; line-height: 1.45; margin: 4px 0; font-weight: 600; }
+.paper-card p { margin: 0; font-size: 13px; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* 一覧(検索結果・カテゴリ) */
+.toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+.toolbar h1 { flex: 1 1 100%; margin: 0 0 2px; font-family: var(--serif); font-size: 24px; font-weight: 800; }
+.toolbar .info { flex: 1; color: var(--muted); font-size: 13px; min-width: 180px; }
+.item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+.item h3 { font-family: var(--serif); font-size: 18px; line-height: 1.45; margin: 4px 0 4px; font-weight: 600; }
+.item .orig { font-size: 12.5px; color: var(--muted); margin: -2px 0 4px; }
+.item p.sum { margin: 2px 0 0; font-size: 14px; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.item p.sum.open { -webkit-line-clamp: unset; }
+.item .au { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+.item .th { width: 150px; height: 100px; object-fit: cover; border-radius: 4px; background: var(--soft); }
+.acts { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.act { font-size: 12px; padding: 2px 10px; border: 1px solid var(--line); border-radius: 99px; background: none; cursor: pointer; color: var(--muted); }
+.act:hover { color: var(--accent); border-color: var(--accent); }
+.act.on { color: #b7791f; border-color: #e0a100; }
+.loadmore { display: block; margin: 20px auto; padding: 10px 28px; border: 1px solid var(--line); border-radius: 99px; background: var(--panel); cursor: pointer; }
+.loadmore:hover { border-color: var(--accent); color: var(--accent); }
+.empty { text-align: center; color: var(--muted); padding: 56px 16px; }
+.spin { display: inline-block; width: 11px; height: 11px; border: 2px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: sp .8s linear infinite; vertical-align: -1px; }
+@keyframes sp { to { transform: rotate(360deg); } }
+.skel { background: linear-gradient(90deg, var(--soft) 25%, var(--line) 50%, var(--soft) 75%); background-size: 200% 100%; animation: sk 1.4s infinite; border-radius: 4px; }
+@keyframes sk { to { background-position: -200% 0; } }
+
+/* ---------- 右カラム ---------- */
+.rail .box { margin-bottom: 28px; }
+.rail .box-h { font-family: var(--serif); font-size: 17px; font-weight: 800; border-top: 2px solid var(--rule); padding-top: 8px; margin: 0 0 8px; }
+.rank { list-style: none; margin: 0; padding: 0; counter-reset: r; }
+.rank li { counter-increment: r; display: grid; grid-template-columns: 30px 1fr; gap: 6px; padding: 9px 0; border-bottom: 1px solid var(--line); }
+.rank li::before { content: counter(r); font-family: var(--serif); font-weight: 800; font-size: 20px; line-height: 1.1; color: var(--accent); }
+.rank li:nth-child(n+4)::before { color: var(--muted); }
+.rank h4 { margin: 0 0 2px; font-size: 14px; line-height: 1.45; font-weight: 600; }
+.otd { list-style: none; margin: 0; padding: 0; }
+.otd li { padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; line-height: 1.5; }
+.otd b { color: var(--accent); font-family: var(--serif); margin-right: 4px; }
+.kp { background: var(--soft); border-radius: 6px; padding: 14px; }
+.kp h4 { margin: 0 0 4px; font-family: var(--serif); font-size: 18px; }
+.kp p { margin: 0 0 6px; font-size: 13.5px; color: var(--muted); }
+.kp .other { font-size: 13px; padding-top: 6px; border-top: 1px solid var(--line); margin-top: 8px; }
+.kp .other a { color: var(--link); display: block; padding: 2px 0; }
+.srcs { display: flex; flex-direction: column; }
+.src { display: flex; align-items: center; gap: 8px; padding: 5px 2px; border: none; background: none; cursor: pointer; text-align: left; font-size: 13px; border-bottom: 1px dashed var(--line); }
+.src.off { opacity: .4; }
 .src .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
 .src .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .src .st { font-size: 12px; color: var(--muted); }
-.src .st.err { color: var(--err); }
-.spin { display: inline-block; width: 11px; height: 11px; border: 2px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: sp .8s linear infinite; }
-@keyframes sp { to { transform: rotate(360deg); } }
-.hint { font-size: 12px; color: var(--muted); margin: 10px 4px 0; line-height: 1.5; }
+.src .st.err { color: var(--accent); }
+.legend { font-size: 12px; color: var(--muted); line-height: 1.8; margin-top: 10px; }
+.legend .grade { width: 16px; height: 16px; font-size: 10px; vertical-align: -3px; margin-right: 3px; }
+.foot { font-size: 12px; color: var(--muted); }
 
-.tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-.tools .info { flex: 1; color: var(--muted); font-size: 13px; min-width: 200px; }
-.tools .info b { color: var(--text); }
-
-.panel { background: var(--wiki-soft); border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; }
-.panel h4 { margin: 0 0 6px; font-size: 13px; color: var(--wiki); }
-.panel .w { margin: 6px 0; }
-.panel .w a { font-weight: 600; }
-.panel .w p { margin: 2px 0 0; font-size: 13.5px; color: var(--muted); }
-
-.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; box-shadow: var(--shadow); }
-.meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 12.5px; color: var(--muted); }
-.badge { font-size: 11.5px; font-weight: 700; padding: 1px 8px; border-radius: 99px; }
-.badge.news { color: var(--news); background: var(--news-soft); }
-.badge.paper { color: var(--paper); background: var(--paper-soft); }
-.badge.wiki { color: var(--wiki); background: var(--wiki-soft); }
-.badge.trivia { color: var(--trivia); background: var(--trivia-soft); }
-.card.has-img { display: grid; grid-template-columns: 1fr 112px; gap: 0 14px; }
-.card.has-img > .body { min-width: 0; }
-.card .thumb { width: 112px; height: 84px; object-fit: cover; border-radius: 8px; background: var(--bg); margin-top: 4px; }
-@media (max-width: 520px) { .card.has-img { grid-template-columns: 1fr 84px; } .card .thumb { width: 84px; height: 64px; } }
-.card h2 { font-size: 16.5px; line-height: 1.45; margin: 6px 0 4px; font-weight: 650; }
-.card h2 a { text-decoration: none; }
-.card h2 a:hover { text-decoration: underline; color: var(--accent); }
-.card .orig { font-size: 12.5px; color: var(--muted); margin: -2px 0 4px; }
-.card p.sum { margin: 4px 0 0; font-size: 14px; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.card p.sum.open { -webkit-line-clamp: unset; }
-.card .au { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
-.acts { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
-.act { font-size: 12.5px; padding: 3px 10px; border: 1px solid var(--line); border-radius: 99px; background: none; cursor: pointer; text-decoration: none; color: var(--muted); }
-.act:hover { color: var(--accent); border-color: var(--accent); }
-.act.on { color: #b45309; border-color: #f59e0b; }
-.grade { font-size: 12px; font-weight: 800; width: 22px; height: 22px; display: inline-grid; place-items: center; border-radius: 6px; cursor: help; flex: none; }
-.grade.A { color: #fff; background: #15803d; }
-.grade.B { color: #fff; background: #ca8a04; }
-.grade.C { color: #fff; background: #6b7280; }
-.legend { font-size: 12px; color: var(--muted); margin: 12px 4px 0; line-height: 1.7; border-top: 1px solid var(--line); padding-top: 10px; }
-.legend .grade { width: 18px; height: 18px; font-size: 11px; margin-right: 4px; vertical-align: -3px; }
-.empty { text-align: center; color: var(--muted); padding: 48px 16px; }
-.more { display: block; margin: 16px auto; }
-
-@media (max-width: 820px) {
-  .legend { display: none; }
-  main { grid-template-columns: 1fr; }
-  aside .box { position: static; }
-  aside .list { display: flex; flex-wrap: wrap; gap: 4px; }
-  .src { width: auto; border: 1px solid var(--line); border-radius: 99px; padding: 4px 10px; }
-  .src .nm { max-width: 150px; }
-  .hint { display: none; }
+/* ---------- スマホ ---------- */
+@media (max-width: 960px) {
+  .wrap { grid-template-columns: 1fr; gap: 8px; }
+  .top { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .mast-in { gap: 10px; padding: 10px 16px; }
+  .logo b { font-size: 21px; }
+  .today { margin-left: auto; }
+  form.search { flex-basis: 100%; max-width: none; margin: 0; }
+  .hero h1 { font-size: 22px; }
+  .cols2 { grid-template-columns: 1fr; }
+  .tiles { grid-template-columns: 1fr 1fr; gap: 14px; }
+  .item .th { width: 96px; height: 70px; }
+  .item h3 { font-size: 16.5px; }
 }
 </style>
 </head>
 <body>
-<header>
-  <div class="bar">
-    <a class="logo" href="./" id="home">
+<header class="mast">
+  <div class="mast-in">
+    <a class="logo" href="./" data-home>
       <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="var(--accent)"/><path d="M2 16h28M16 2c5 4 5 24 0 28M16 2c-5 4-5 24 0 28M5 8.5h22M5 23.5h22" stroke="#fff" stroke-width="1.6" fill="none"/></svg>
-      World Hub
+      <b>World Hub</b>
     </a>
-    <form class="search" id="form">
-      <input id="q" type="search" placeholder="キーワードで世界中のニュース・論文・百科事典を検索（例: 量子コンピュータ）" autocomplete="off">
-      <button class="btn primary" type="submit">検索</button>
+    <span class="today" id="today"></span>
+    <form class="search" id="form" role="search">
+      <input id="q" type="search" placeholder="ニュース・論文・雑学を世界中から検索" autocomplete="off" aria-label="検索キーワード">
+      <button type="submit" aria-label="検索">検索</button>
     </form>
-    <select class="btn" id="lang" title="Googleニュースの地域">
+    <select class="sel" id="lang" title="Googleニュースの地域">
       <option value="ja">🇯🇵 日本</option>
       <option value="en">🇺🇸 アメリカ</option>
       <option value="en-GB">🇬🇧 イギリス</option>
@@ -137,66 +201,35 @@ aside h3 { margin: 4px 4px 8px; font-size: 13px; color: var(--muted); font-weigh
       <option value="de">🇩🇪 ドイツ</option>
       <option value="es">🇲🇽 中南米</option>
     </select>
+    <div class="region" id="region"></div>
   </div>
-  <nav class="tabs" id="tabs"></nav>
 </header>
+<nav class="cats"><div class="cats-in" id="cats"></div></nav>
 
-<main>
-  <aside>
-    <div class="box">
-      <h3>情報源（クリックで表示切替）</h3>
-      <div class="list" id="srcs"></div>
-      <div class="legend">
-        <b>信頼度ランクの基準</b><br>
-        📰 ニュース・百科事典・雑学: 配信元サイトの世界アクセス数順位<br>
-        <span class="grade A">A</span>5,000位以内<br>
-        <span class="grade B">B</span>5万位以内<br>
-        <span class="grade C">C</span>5万位より下・圏外<br>
-        📄 論文: 被引用数<br>
-        <span class="grade A">A</span>100回以上 <span class="grade B">B</span>10回以上 <span class="grade C">C</span>未満・未査読<br>
-        <span style="opacity:.85">※アクセス数・引用数は人気の目安で、内容の正しさを保証するものではありません。</span>
-      </div>
-      <p class="hint">日本語で検索すると、英語の論文やニュースは自動で英訳したキーワードで探します。</p>
-    </div>
-  </aside>
-  <section>
-    <div class="tools">
-      <div class="info" id="info"></div>
-      <select class="btn" id="sort">
-        <option value="mix">バランス良く表示</option>
-        <option value="new">新しい順</option>
-        <option value="rank">信頼度順</option>
-      </select>
-      <select class="btn" id="minGrade" title="信頼度で絞り込み">
-        <option value="C">信頼度: すべて</option>
-        <option value="B">B以上</option>
-        <option value="A">Aのみ</option>
-      </select>
-      <button class="btn" id="trAll" title="表示中の見出しと要約を日本語に翻訳">🌐 日本語に翻訳</button>
-    </div>
-    <div id="panel"></div>
-    <div id="list"></div>
-    <button class="btn more" id="more" hidden>もっと見る</button>
-  </section>
-</main>
+<div class="wrap">
+  <main id="main"></main>
+  <aside class="rail" id="rail"></aside>
+</div>
 
 <script>
 const TYPES = { news: 'ニュース', paper: '論文', wiki: '百科事典', trivia: '雑学・教養' };
+const ICON = { news: '📰', paper: '📄', wiki: '📚', trivia: '💡' };
 const COLORS = { news: 'var(--news)', paper: 'var(--paper)', wiki: 'var(--wiki)', trivia: 'var(--trivia)' };
-const PAGE = 40;
+const PAGE = 30;
 
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
 };
-
 const S = {
   sources: [], results: {}, status: {}, off: new Set(store.get('wh-off', [])),
-  q: '', tab: 'all', lang: store.get('wh-lang', 'ja'), sort: store.get('wh-sort', 'mix'), minGrade: store.get('wh-min', 'C'),
-  shown: PAGE, saved: store.get('wh-saved', []), tr: {}, qEn: '', runId: 0,
+  q: '', tab: 'all', lang: store.get('wh-lang', 'ja'), sort: store.get('wh-sort', 'mix'), minGrade: store.get('wh-min', 'C'), region: store.get('wh-region', 'all'),
+  shown: PAGE, saved: store.get('wh-saved', []), tr: {}, qEn: '', runId: 0, visible: [],
 };
 const $ = (id) => document.getElementById(id);
 const esc = (s = '') => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const T = (it) => ({ title: S.tr[it.url]?.title || it.title, summary: S.tr[it.url]?.summary || it.summary });
+const ext = 'target="_blank" rel="noopener"';
 
 function ago(iso) {
   if (!iso) return '';
@@ -208,56 +241,69 @@ function ago(iso) {
   return d.toLocaleDateString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
+// ---------- データ取得 ----------
 async function init() {
+  $('today').textContent = new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' });
   const r = await fetch('api/search').then((r) => r.json());
   S.sources = r.sources;
-  const p = new URLSearchParams(location.search);
-  S.q = p.get('q') || '';
-  S.tab = p.get('tab') || 'all';
-  $('q').value = S.q;
+  readURL();
   $('lang').value = S.lang;
-  $('sort').value = S.sort;
-  $('minGrade').value = S.minGrade;
   run(false);
+}
+function readURL() {
+  const p = new URLSearchParams(location.search);
+  S.q = p.get('q') || ''; S.tab = p.get('tab') || 'all'; $('q').value = S.q;
+}
+function writeURL(push) {
+  const p = new URLSearchParams();
+  if (S.q) p.set('q', S.q);
+  if (S.tab !== 'all') p.set('tab', S.tab);
+  const url = p.toString() ? '?' + p : location.pathname;
+  push ? history.pushState(null, '', url) : history.replaceState(null, '', url);
 }
 
 function run(push = true) {
   const id = ++S.runId;
   S.results = {}; S.status = {}; S.shown = PAGE; S.tr = {}; S.qEn = '';
-  if (push) {
-    const p = new URLSearchParams();
-    if (S.q) p.set('q', S.q);
-    if (S.tab !== 'all') p.set('tab', S.tab);
-    history.pushState(null, '', p.toString() ? '?' + p : location.pathname);
-  }
+  writeURL(push);
   document.title = S.q ? `${S.q} - World Hub` : 'World Hub';
   for (const s of S.sources) {
     S.status[s.id] = { loading: true };
-    const url = `api/search?source=${s.id}&q=${encodeURIComponent(S.q)}&lang=${S.lang}`;
-    fetch(url)
+    fetch(`api/search?source=${s.id}&q=${encodeURIComponent(S.q)}&lang=${S.lang}`)
       .then((r) => r.json())
       .then((d) => {
         if (id !== S.runId) return;
         S.results[s.id] = d.items || [];
-        S.status[s.id] = { count: d.count || 0, error: d.error, ms: d.ms };
+        S.status[s.id] = { count: d.count || 0, error: d.error };
         if (d.qEn) S.qEn = d.qEn;
-        render();
+        schedule();
       })
-      .catch((e) => {
-        if (id !== S.runId) return;
-        S.status[s.id] = { error: '通信エラー' };
-        render();
-      });
+      .catch(() => { if (id === S.runId) { S.status[s.id] = { error: '通信エラー' }; schedule(); } });
   }
   render();
+  window.scrollTo(0, 0);
 }
+let raf = 0;
+function schedule() { cancelAnimationFrame(raf); raf = requestAnimationFrame(render); }
 
-function allItems() {
-  // 情報源ごとのリストを、重複URLを除いて結合
+// ---------- 絞り込み・並べ替え ----------
+// 国内(日本)か海外かの判定: 言語・国・ドメインから
+function regionOf(it) {
+  const host = (it.domain || (() => { try { return new URL(it.url).hostname; } catch { return ''; } })()).toLowerCase();
+  const jp = it.lang === 'ja' || it.lang === 'Japanese' || it.country === '日本' || it.country === 'Japan' || /\.jp$/.test(host);
+  return jp ? 'jp' : 'world';
+}
+function passRegion(it) { return S.region === 'all' || regionOf(it) === S.region; }
+function passGrade(it) {
+  if (!passRegion(it)) return false;
+  const g = it.rank?.grade || 'C';
+  return S.minGrade === 'C' || (S.minGrade === 'B' ? g !== 'C' : g === 'A');
+}
+function itemsOf(type, sort = S.sort) {
   const seen = new Set(), lists = [];
   for (const s of S.sources) {
     if (S.off.has(s.id) || !S.results[s.id]) continue;
-    if (S.tab !== 'all' && S.tab !== 'saved' && s.type !== S.tab) continue;
+    if (type !== 'all' && s.type !== type) continue;
     const l = [];
     for (const it of S.results[s.id]) {
       if (!passGrade(it)) continue;
@@ -267,29 +313,17 @@ function allItems() {
     }
     lists.push(l);
   }
-  let out = [];
-  if (S.sort === 'rank') {
-    const order = { A: 0, B: 1, C: 2 };
-    out = lists.flat().sort((a, b) => order[a.rank?.grade || 'C'] - order[b.rank?.grade || 'C'] || (b.date || '').localeCompare(a.date || ''));
-  } else if (S.sort === 'new') {
-    out = lists.flat().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-  } else {
-    // 1つの情報源に偏らないよう順番に1件ずつ取り出す
-    const idx = lists.map(() => 0);
-    let added = true;
-    while (added) {
-      added = false;
-      lists.forEach((l, i) => { if (idx[i] < l.length) { out.push(l[idx[i]++]); added = true; } });
-    }
+  const ord = { A: 0, B: 1, C: 2 };
+  if (sort === 'rank') return lists.flat().sort((a, b) => ord[a.rank?.grade || 'C'] - ord[b.rank?.grade || 'C'] || (b.date || '').localeCompare(a.date || ''));
+  if (sort === 'new') return lists.flat().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  // 1つの情報源に偏らないよう順番に取り出す
+  const out = [], idx = lists.map(() => 0);
+  for (let added = true; added; ) {
+    added = false;
+    lists.forEach((l, i) => { if (idx[i] < l.length) { out.push(l[idx[i]++]); added = true; } });
   }
   return out;
 }
-
-function passGrade(it) {
-  const g = it.rank?.grade || 'C';
-  return S.minGrade === 'C' || (S.minGrade === 'B' ? g !== 'C' : g === 'A');
-}
-
 function counts() {
   const c = { all: 0, news: 0, paper: 0, wiki: 0, trivia: 0, saved: S.saved.length };
   for (const s of S.sources) {
@@ -299,128 +333,231 @@ function counts() {
   }
   return c;
 }
+const loadingCount = () => Object.values(S.status).filter((s) => s.loading).length;
 
-function render() {
-  const c = counts();
-  const tabs = [['all', 'すべて'], ['news', '📰 ニュース'], ['paper', '📄 論文'], ['wiki', '📚 百科事典'], ['trivia', '💡 雑学・教養'], ['saved', '⭐ 保存済み']];
-  $('tabs').innerHTML = tabs.map(([k, l]) => `<button class="tab ${S.tab === k ? 'on' : ''}" data-tab="${k}">${l}<span class="n">${c[k] || ''}</span></button>`).join('');
-
-  $('srcs').innerHTML = S.sources.map((s) => {
-    const st = S.status[s.id] || {};
-    const stat = st.loading ? '<span class="spin"></span>' : st.error ? `<span class="st err" title="${esc(st.error)}">エラー</span>` : `<span class="st">${st.count ?? ''}</span>`;
-    return `<button class="src ${S.off.has(s.id) ? 'off' : ''}" data-src="${s.id}" title="${esc(s.name)}"><span class="dot" style="background:${COLORS[s.type]}"></span><span class="nm">${esc(s.name)}</span>${stat}</button>`;
-  }).join('');
-
-  const loading = Object.values(S.status).filter((s) => s.loading).length;
-  let items;
-  if (S.tab === 'saved') items = S.saved.slice().reverse().filter(passGrade);
-  else items = allItems();
-
-  const head = S.tab === 'saved' ? '保存した記事・論文'
-    : S.q ? `「<b>${esc(S.q)}</b>」の検索結果` : '<b>いま世界で話題</b>のニュース・新しい論文・今日の雑学';
-  $('info').innerHTML = `${head} — ${items.length}件${S.qEn ? `（英語キーワード: ${esc(S.qEn)}）` : ''}${loading ? ` · 取得中 ${loading}` : ''}`;
-
-  // 知識パネル(すべてタブで検索時に百科事典の上位を表示)
-  const wiki = S.tab === 'all' && S.q ? ['wikija', 'wikien'].filter((id) => !S.off.has(id)).flatMap((id) => (S.results[id] || []).slice(0, 1)) : [];
-  $('panel').innerHTML = wiki.length ? `<div class="panel"><h4>📚 百科事典で調べる</h4>${wiki.map((w) => `<div class="w"><a href="${esc(w.url)}" target="_blank" rel="noopener">${esc(w.title)}</a> <span class="meta">${esc(w.publisher)}</span><p>${esc(S.tr[w.url]?.summary || w.summary)}</p></div>`).join('')}</div>` : '';
-  if (wiki.length) items = items.filter((it) => !wiki.includes(it));
-
-  const shown = items.slice(0, S.shown);
-  $('list').innerHTML = shown.length ? shown.map(card).join('')
-    : `<div class="empty">${loading ? '<span class="spin"></span> 世界中から集めています…' : S.tab === 'saved' ? '⭐ を押した記事がここに保存されます' : '見つかりませんでした。別のキーワードを試してください。'}</div>`;
-  $('more').hidden = items.length <= S.shown;
-  S.visible = shown;
+// ---------- 部品 ----------
+const gradeBadge = (it) => it.rank ? `<span class="grade ${it.rank.grade}" title="信頼度 ${it.rank.grade}: ${esc(it.rank.basis)}">${it.rank.grade}</span>` : '';
+const isSaved = (it) => S.saved.some((s) => s.url === it.url);
+const star = (it) => `<button class="star ${isSaved(it) ? 'on' : ''}" data-save="${esc(it.url)}" title="保存" aria-label="保存">${isSaved(it) ? '★' : '☆'}</button>`;
+function meta(it, { kicker = false, time = true } = {}) {
+  return `<div class="meta">${gradeBadge(it)}${kicker ? `<span class="kicker ${it.type}">${TYPES[it.type]}</span>` : ''}<span>${esc(it.publisher || '')}</span>${time && it.date ? `<span>${ago(it.date)}</span>` : ''}${star(it)}</div>`;
 }
+const thumb = (it, cls = 'th') => it.image ? `<a href="${esc(it.url)}" ${ext} tabindex="-1"><img class="${cls}" src="${esc(it.image)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.remove()"></a>` : '';
 
-function card(it) {
-  const saved = S.saved.some((s) => s.url === it.url);
-  const tr = S.tr[it.url];
-  const src = S.sources.find((s) => s.id === it.sourceId);
-  return `<article class="card ${it.image ? 'has-img' : ''}"><div class="body">
-    <div class="meta">
-      ${it.rank ? `<span class="grade ${it.rank.grade}" title="信頼度 ${it.rank.grade}: ${esc(it.rank.basis)}">${it.rank.grade}</span>` : ''}
-      <span class="badge ${it.type}">${TYPES[it.type]}</span>
-      <span>${esc(it.publisher || src?.name || '')}</span>
-      ${it.country ? `<span>📍${esc(it.country)}</span>` : ''}
-      ${it.date ? `<span title="${esc(new Date(it.date).toLocaleString('ja-JP'))}">${ago(it.date)}</span>` : ''}
-      ${it.meta ? `<span>${esc(it.meta)}</span>` : ''}
-      ${it.rank ? `<span>${esc(it.rank.basis)}</span>` : ''}
-    </div>
-    <h2><a href="${esc(it.url)}" target="_blank" rel="noopener">${esc(tr?.title || it.title)}</a></h2>
-    ${tr && tr.title !== it.title ? `<div class="orig">原文: ${esc(it.title)}</div>` : ''}
-    ${it.summary ? `<p class="sum" data-sum>${esc(tr?.summary || it.summary)}</p>` : ''}
-    ${it.authors?.length ? `<div class="au">👤 ${esc(it.authors.join(', '))}${it.authors.length >= 6 ? ' ほか' : ''}</div>` : ''}
-    <div class="acts">
-      <button class="act ${saved ? 'on' : ''}" data-save="${esc(it.url)}">${saved ? '★ 保存済み' : '☆ 保存'}</button>
-      ${tr ? '' : `<button class="act" data-tr="${esc(it.url)}">🌐 翻訳</button>`}
-      ${it.summary && it.summary.length > 160 ? '<button class="act" data-expand>続きを読む</button>' : ''}
-      ${it.pdf ? `<a class="act" href="${esc(it.pdf)}" target="_blank" rel="noopener">PDF</a>` : ''}
-      ${it.discuss ? `<a class="act" href="${esc(it.discuss)}" target="_blank" rel="noopener">議論を見る</a>` : ''}
-      <a class="act" href="https://translate.google.com/translate?sl=auto&tl=ja&u=${encodeURIComponent(it.url)}" target="_blank" rel="noopener">ページごと翻訳</a>
-    </div></div>
-    ${it.image ? `<a href="${esc(it.url)}" target="_blank" rel="noopener"><img class="thumb" src="${esc(it.image)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></a>` : ''}
+function hero(it) {
+  const t = T(it);
+  return `<article class="hero">
+    ${it.image ? `<a class="img" href="${esc(it.url)}" ${ext} style="display:block"><img src="${esc(it.image)}" alt="" referrerpolicy="no-referrer" onerror="this.parentNode.remove()"></a>` : ''}
+    ${meta(it, { kicker: true })}
+    <a href="${esc(it.url)}" ${ext}><h1 class="hl">${esc(t.title)}</h1></a>
+    ${t.summary ? `<p>${esc(t.summary)}</p>` : ''}
   </article>`;
 }
+function sub(it) {
+  return `<article class="sub ${it.image ? '' : 'noimg'}"><div><a href="${esc(it.url)}" ${ext}><h3 class="hl">${esc(T(it).title)}</h3></a>${meta(it)}</div>${thumb(it)}</article>`;
+}
+function row(it, opts = {}) {
+  return `<li class="row"><div><a href="${esc(it.url)}" ${ext}><h3 class="hl">${esc(T(it).title)}</h3></a>${meta(it, opts)}</div>${thumb(it)}</li>`;
+}
+function tile(it) {
+  return `<article class="tile"><a class="img" href="${esc(it.url)}" ${ext}>${it.image ? `<img src="${esc(it.image)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.replaceWith('${ICON[it.type]}')">` : ICON[it.type]}</a>${meta(it, { time: false })}<a href="${esc(it.url)}" ${ext}><h3 class="hl">${esc(T(it).title)}</h3></a></article>`;
+}
+function paperCard(it) {
+  const t = T(it);
+  return `<article class="paper-card">${meta(it)}<a href="${esc(it.url)}" ${ext}><h3 class="hl">${esc(t.title)}</h3></a>${t.summary ? `<p>${esc(t.summary)}</p>` : `<p>${esc((it.authors || []).join(', '))}</p>`}</article>`;
+}
+function fullItem(it) {
+  const t = T(it), tr = S.tr[it.url];
+  return `<article class="item"><div>
+    <div class="meta">${gradeBadge(it)}<span class="kicker ${it.type}">${TYPES[it.type]}</span><span class="rg">${regionOf(it) === 'jp' ? '国内' : '海外'}</span><span>${esc(it.publisher || '')}</span>${it.country ? `<span>📍${esc(it.country)}</span>` : ''}${it.date ? `<span title="${esc(new Date(it.date).toLocaleString('ja-JP'))}">${ago(it.date)}</span>` : ''}${it.meta ? `<span>${esc(it.meta)}</span>` : ''}</div>
+    <a href="${esc(it.url)}" ${ext}><h3 class="hl">${esc(t.title)}</h3></a>
+    ${tr && tr.title !== it.title ? `<div class="orig">原文: ${esc(it.title)}</div>` : ''}
+    ${t.summary ? `<p class="sum" data-sum>${esc(t.summary)}</p>` : ''}
+    ${it.authors?.length ? `<div class="au">👤 ${esc(it.authors.join(', '))}${it.authors.length >= 6 ? ' ほか' : ''}</div>` : ''}
+    <div class="meta" style="margin-top:4px">${it.rank ? `<span>信頼度の根拠: ${esc(it.rank.basis)}</span>` : ''}</div>
+    <div class="acts">
+      <button class="act ${isSaved(it) ? 'on' : ''}" data-save="${esc(it.url)}">${isSaved(it) ? '★ 保存済み' : '☆ 保存'}</button>
+      ${tr ? '' : `<button class="act" data-tr="${esc(it.url)}">🌐 翻訳</button>`}
+      ${it.summary && it.summary.length > 160 ? '<button class="act" data-expand>続きを読む</button>' : ''}
+      ${it.pdf ? `<a class="act" href="${esc(it.pdf)}" ${ext}>PDF</a>` : ''}
+      ${it.discuss ? `<a class="act" href="${esc(it.discuss)}" ${ext}>議論を見る</a>` : ''}
+      <a class="act" href="https://translate.google.com/translate?sl=auto&tl=ja&u=${encodeURIComponent(it.url)}" ${ext}>ページごと翻訳</a>
+    </div></div>${thumb(it)}</article>`;
+}
+const secHead = (title, type, moreTab) => `<div class="sec-h"><h2>${type ? `<span class="dot" style="background:${COLORS[type]}"></span>` : ''}${title}</h2>${moreTab ? `<button class="more" data-tab="${moreTab}">もっと見る ›</button>` : ''}</div>`;
+const skeleton = (n = 4) => Array.from({ length: n }, () => `<div style="padding:12px 0;border-bottom:1px solid var(--line)"><div class="skel" style="height:16px;width:85%;margin-bottom:8px"></div><div class="skel" style="height:12px;width:40%"></div></div>`).join('');
 
+// ---------- 画面 ----------
+function render() {
+  const c = counts();
+  const cats = [['all', 'トップ'], ['news', 'ニュース'], ['paper', '論文'], ['trivia', '雑学・教養'], ['wiki', '百科事典'], ['saved', '★ 保存済み']];
+  $('cats').innerHTML = cats.map(([k, l]) => `<button class="cat ${S.tab === k ? 'on' : ''}" data-tab="${k}">${l}${k !== 'all' && c[k] ? `<span class="n">${c[k]}</span>` : ''}</button>`).join('');
+  $('region').innerHTML = `${[['all', 'すべて'], ['jp', '🇯🇵 国内'], ['world', '🌍 海外']].map(([k, l]) => `<button class="${S.region === k ? 'on' : ''}" data-region="${k}">${l}</button>`).join('')}`;
+  S.visible = [];
+  $('main').innerHTML = !S.q && S.tab === 'all' ? homeView() : listView();
+  $('rail').innerHTML = railView();
+}
+
+function homeView() {
+  const used = new Set();
+  const take = (arr, n, pred = () => true) => {
+    const out = [];
+    for (const it of arr) { if (out.length >= n) break; if (!used.has(it.url) && pred(it)) { used.add(it.url); out.push(it); } }
+    S.visible.push(...out);
+    return out;
+  };
+  const news = itemsOf('news');
+  const papers = itemsOf('paper');
+  const trivia = itemsOf('trivia');
+  const busy = loadingCount() > 0;
+
+  const heroIt = take(news, 1, (it) => it.image && it.summary && it.rank?.grade === 'A')[0] || take(news, 1, (it) => it.image)[0] || take(news, 1)[0];
+  const subs = take(news, 4, (it) => it.image);
+  const subs2 = subs.length < 4 ? take(news, 4 - subs.length) : [];
+  const headlines = S.region === 'all' ? [] : take(news, 14);
+  const papersTop = take(papers, 6);
+  const triviaTop = take(trivia, 6, (it) => it.image);
+  const triviaMore = triviaTop.length < 6 ? take(trivia, 6 - triviaTop.length) : [];
+
+  let h = '';
+  h += heroIt ? `<section class="top">${hero(heroIt)}<div class="subs">${[...subs, ...subs2].map(sub).join('')}</div></section>`
+    : `<section class="top"><div><div class="skel" style="aspect-ratio:16/9;margin-bottom:12px"></div><div class="skel" style="height:26px;width:90%"></div></div><div>${skeleton(4)}</div></section>`;
+  const newsSec = (title, list) => `<section class="sec">${secHead(title, 'news', 'news')}${list.length ? `<ul class="rows cols2">${list.map((it) => row(it)).join('')}</ul>` : busy ? skeleton(6) : '<p class="empty">ニュースを取得できませんでした</p>'}</section>`;
+  if (S.region === 'all') {
+    h += newsSec('🇯🇵 国内ニュース', take(news, 10, (it) => regionOf(it) === 'jp'));
+    h += newsSec('🌍 海外ニュース', take(news, 10, (it) => regionOf(it) === 'world'));
+  } else h += newsSec(S.region === 'jp' ? '🇯🇵 国内ニュース' : '🌍 海外ニュース', headlines);
+  h += `<section class="sec">${secHead('雑学・教養', 'trivia', 'trivia')}${triviaTop.length + triviaMore.length ? `<div class="tiles">${[...triviaTop, ...triviaMore].map(tile).join('')}</div>` : busy ? skeleton(3) : ''}</section>`;
+  h += `<section class="sec">${secHead('注目の論文', 'paper', 'paper')}${papersTop.length ? `<div class="cols2">${papersTop.map(paperCard).join('')}</div>` : busy ? skeleton(4) : ''}</section>`;
+  h += `<div class="toolbar" style="justify-content:flex-end">${gradeSelect()}<button class="sel" id="trAll">🌐 日本語に翻訳</button></div>`;
+  return h;
+}
+
+function gradeSelect() {
+  return `<select class="sel" id="minGrade" title="信頼度で絞り込み">
+    <option value="C" ${S.minGrade === 'C' ? 'selected' : ''}>信頼度: すべて</option>
+    <option value="B" ${S.minGrade === 'B' ? 'selected' : ''}>信頼度: B以上</option>
+    <option value="A" ${S.minGrade === 'A' ? 'selected' : ''}>信頼度: Aのみ</option></select>`;
+}
+
+function listView() {
+  let items = S.tab === 'saved' ? S.saved.slice().reverse().filter(passGrade) : itemsOf(S.tab === 'all' ? 'all' : S.tab);
+  // 検索時の百科事典トップは右カラムに出すので一覧から除く
+  const kp = kpItems();
+  if (S.tab === 'all' && kp.length) items = items.filter((it) => !kp.includes(it));
+  const shown = items.slice(0, S.shown);
+  S.visible = shown;
+  const busy = loadingCount();
+  const title = S.tab === 'saved' ? '保存した記事' : S.q ? `「${esc(S.q)}」` : `${ICON[S.tab] || ''} ${TYPES[S.tab] || ''}`;
+  const sub = S.q && S.tab !== 'all' && S.tab !== 'saved' ? ` の${TYPES[S.tab]}` : '';
+  return `<div class="toolbar">
+      <h1>${title}${sub}</h1>
+      <div class="info">${items.length}件${S.qEn ? `・英語キーワード「${esc(S.qEn)}」でも検索` : ''}${busy ? ` · <span class="spin"></span> 取得中 ${busy}` : ''}</div>
+      <select class="sel" id="sort">
+        <option value="mix" ${S.sort === 'mix' ? 'selected' : ''}>バランス良く</option>
+        <option value="new" ${S.sort === 'new' ? 'selected' : ''}>新しい順</option>
+        <option value="rank" ${S.sort === 'rank' ? 'selected' : ''}>信頼度順</option>
+      </select>
+      ${gradeSelect()}
+      <button class="sel" id="trAll">🌐 日本語に翻訳</button>
+    </div>
+    ${shown.length ? shown.map(fullItem).join('') : busy ? skeleton(6) : `<div class="empty">${S.tab === 'saved' ? '☆ を押した記事がここに保存されます' : '見つかりませんでした。別のキーワードを試してください。'}</div>`}
+    ${items.length > S.shown ? '<button class="loadmore" id="more">もっと見る</button>' : ''}`;
+}
+
+function kpItems() {
+  if (!S.q) return [];
+  return ['wikija', 'wikien'].filter((id) => !S.off.has(id) && !(S.region === 'jp' && id === 'wikien') && !(S.region === 'world' && id === 'wikija')).flatMap((id) => (S.results[id] || []).slice(0, 1));
+}
+
+function railView() {
+  let h = '';
+  // 知識パネル(検索時)
+  const kp = kpItems();
+  if (kp.length && S.tab !== 'saved') {
+    const [m, ...o] = kp;
+    const more = (S.results.wikija || []).slice(1, 5);
+    h += `<div class="box"><h3 class="box-h">📚 百科事典</h3><div class="kp">
+      <a href="${esc(m.url)}" ${ext}><h4 class="hl">${esc(m.title)}</h4></a>
+      <p>${esc(T(m).summary)}</p><div class="meta">${gradeBadge(m)}<span>${esc(m.publisher)}</span></div>
+      ${o.map((w) => `<div class="other"><a href="${esc(w.url)}" ${ext}>${esc(w.title)}</a><span class="meta">${esc(w.publisher)}</span></div>`).join('')}
+      ${more.length ? `<div class="other">関連: ${more.map((w) => `<a href="${esc(w.url)}" ${ext}>${esc(w.title)}</a>`).join('')}</div>` : ''}
+    </div></div>`;
+  }
+  // 話題ランキング(Hacker News のポイント順)
+  if (S.tab === 'all' || S.tab === 'news') {
+    const hot = (S.results.hn || []).filter(passGrade).slice().sort((a, b) => (b.points || 0) - (a.points || 0)).slice(0, 8);
+    if (hot.length) h += `<div class="box"><h3 class="box-h">🔥 話題ランキング</h3><ol class="rank">${hot.map((it) => `<li><div><a href="${esc(it.url)}" ${ext}><h4 class="hl">${esc(T(it).title)}</h4></a><div class="meta">${gradeBadge(it)}<span>▲${it.points}</span><a href="${esc(it.discuss)}" ${ext} style="color:var(--link)">議論</a></div></div></li>`).join('')}</ol><div class="foot">Hacker News の投票数順</div></div>`;
+  }
+  // 今日は何の日
+  if (!S.q && (S.tab === 'all' || S.tab === 'trivia')) {
+    const otd = (S.results.wikitoday || []).filter((it) => /^\d+年の今日/.test(it.title)).slice(0, 5);
+    if (otd.length) h += `<div class="box"><h3 class="box-h">📅 今日は何の日</h3><ul class="otd">${otd.map((it) => { const m = it.title.match(/^(\d+)年の今日: (.*)$/); return `<li><b>${m[1]}年</b><a href="${esc(it.url)}" ${ext} class="hl">${esc(S.tr[it.url]?.title?.replace(/^.*?: /, '') || m[2])}</a></li>`; }).join('')}</ul><div class="foot">出典: Wikipedia（英語・「日本語に翻訳」で訳せます）</div></div>`;
+  }
+  // 情報源と信頼度の説明
+  h += `<div class="box"><h3 class="box-h">情報源</h3><div class="srcs">${S.sources.map((s) => {
+    const st = S.status[s.id] || {};
+    const stat = st.loading ? '<span class="spin"></span>' : st.error ? `<span class="st err" title="${esc(st.error)}">エラー</span>` : `<span class="st">${st.count ?? ''}</span>`;
+    return `<button class="src ${S.off.has(s.id) ? 'off' : ''}" data-src="${s.id}" title="クリックで表示/非表示"><span class="dot" style="background:${COLORS[s.type]}"></span><span class="nm">${esc(s.name)}</span>${stat}</button>`;
+  }).join('')}</div>
+  <div class="legend"><b>信頼度ランク</b><br>
+    ニュース・百科事典・雑学＝配信元サイトの世界アクセス数順位<br>
+    <span class="grade A">A</span>5,000位以内　<span class="grade B">B</span>5万位以内　<span class="grade C">C</span>それ以下<br>
+    論文＝被引用数<br>
+    <span class="grade A">A</span>100回以上　<span class="grade B">B</span>10回以上　<span class="grade C">C</span>未満・未査読<br>
+    ※人気の目安であり、内容の正しさの保証ではありません。日本語で検索すると英語の情報源は英訳キーワードで探します。
+  </div></div>`;
+  return h;
+}
+
+// ---------- 翻訳・保存 ----------
 function findItem(url) {
   for (const l of Object.values(S.results)) { const f = l.find((i) => i.url === url); if (f) return f; }
   return S.saved.find((i) => i.url === url);
 }
-
 async function translateItems(items) {
-  items = items.filter((it) => !S.tr[it.url]);
+  items = items.filter((it) => it && !S.tr[it.url] && it.lang !== 'ja');
   if (!items.length) return;
   const texts = items.flatMap((it) => [it.title, it.summary || '']);
   const r = await fetch('api/translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ texts, to: 'ja' }) }).then((r) => r.json());
+  if (!r.texts) return;
   items.forEach((it, i) => (S.tr[it.url] = { title: r.texts[i * 2], summary: r.texts[i * 2 + 1] }));
   render();
 }
 
-// ---------- イベント ----------
+// ---------- 操作 ----------
+function setTab(tab) {
+  S.tab = tab; S.shown = PAGE; writeURL(true); render(); window.scrollTo(0, 0);
+}
 $('form').addEventListener('submit', (e) => { e.preventDefault(); S.q = $('q').value.trim(); if (S.tab === 'saved') S.tab = 'all'; run(); });
-$('home').addEventListener('click', (e) => { e.preventDefault(); S.q = ''; $('q').value = ''; S.tab = 'all'; run(); });
 $('lang').addEventListener('change', () => { S.lang = $('lang').value; store.set('wh-lang', S.lang); run(); });
-$('sort').addEventListener('change', () => { S.sort = $('sort').value; store.set('wh-sort', S.sort); render(); });
-$('minGrade').addEventListener('change', () => { S.minGrade = $('minGrade').value; store.set('wh-min', S.minGrade); S.shown = PAGE; render(); });
-$('more').addEventListener('click', () => { S.shown += PAGE; render(); });
-$('trAll').addEventListener('click', async (e) => {
-  const b = e.currentTarget; b.disabled = true; b.textContent = '翻訳中…';
-  const wikiTop = ['wikija', 'wikien'].flatMap((id) => (S.results[id] || []).slice(0, 1));
-  try { await translateItems([...(S.visible || []), ...wikiTop].filter((it) => it.lang !== 'ja')); }
-  finally { b.disabled = false; b.textContent = '🌐 日本語に翻訳'; }
+document.addEventListener('change', (e) => {
+  if (e.target.id === 'sort') { S.sort = e.target.value; store.set('wh-sort', S.sort); render(); }
+  if (e.target.id === 'minGrade') { S.minGrade = e.target.value; store.set('wh-min', S.minGrade); S.shown = PAGE; render(); }
 });
-$('tabs').addEventListener('click', (e) => {
-  const t = e.target.closest('[data-tab]'); if (!t) return;
-  S.tab = t.dataset.tab; S.shown = PAGE;
-  const p = new URLSearchParams(location.search);
-  S.tab === 'all' ? p.delete('tab') : p.set('tab', S.tab);
-  history.replaceState(null, '', p.toString() ? '?' + p : location.pathname);
-  render();
-});
-$('srcs').addEventListener('click', (e) => {
-  const b = e.target.closest('[data-src]'); if (!b) return;
-  const id = b.dataset.src;
-  S.off.has(id) ? S.off.delete(id) : S.off.add(id);
-  store.set('wh-off', [...S.off]);
-  render();
-});
-$('list').addEventListener('click', (e) => {
-  const sv = e.target.closest('[data-save]');
-  if (sv) {
-    const url = sv.dataset.save;
-    const i = S.saved.findIndex((s) => s.url === url);
+document.addEventListener('click', async (e) => {
+  const el = (sel) => e.target.closest(sel);
+  let b;
+  if ((b = el('[data-home]'))) { e.preventDefault(); S.q = ''; $('q').value = ''; S.tab = 'all'; run(); return; }
+  if ((b = el('[data-tab]'))) { setTab(b.dataset.tab); return; }
+  if ((b = el('[data-region]'))) { S.region = b.dataset.region; store.set('wh-region', S.region); S.shown = PAGE; render(); return; }
+  if ((b = el('[data-src]'))) { const id = b.dataset.src; S.off.has(id) ? S.off.delete(id) : S.off.add(id); store.set('wh-off', [...S.off]); render(); return; }
+  if ((b = el('[data-save]'))) {
+    e.preventDefault();
+    const url = b.dataset.save, i = S.saved.findIndex((s) => s.url === url);
     if (i >= 0) S.saved.splice(i, 1); else { const it = findItem(url); if (it) S.saved.push(it); }
     store.set('wh-saved', S.saved); render(); return;
   }
-  const tr = e.target.closest('[data-tr]');
-  if (tr) { tr.textContent = '翻訳中…'; const it = findItem(tr.dataset.tr); if (it) translateItems([it]); return; }
-  const ex = e.target.closest('[data-expand]');
-  if (ex) { const p = ex.closest('.card').querySelector('[data-sum]'); p.classList.toggle('open'); ex.textContent = p.classList.contains('open') ? '閉じる' : '続きを読む'; }
+  if ((b = el('[data-tr]'))) { b.textContent = '翻訳中…'; translateItems([findItem(b.dataset.tr)]); return; }
+  if ((b = el('[data-expand]'))) { const p = b.closest('.item').querySelector('[data-sum]'); p.classList.toggle('open'); b.textContent = p.classList.contains('open') ? '閉じる' : '続きを読む'; return; }
+  if ((b = el('#more'))) { S.shown += PAGE; render(); return; }
+  if ((b = el('#trAll'))) {
+    b.disabled = true; b.textContent = '翻訳中…';
+    const extra = [...kpItems(), ...(S.results.hn || []).slice(0, 8), ...(S.results.wikitoday || []).slice(0, 8)];
+    try { await translateItems([...S.visible, ...extra]); } finally { const n = $('trAll'); if (n) { n.disabled = false; n.textContent = '🌐 日本語に翻訳'; } }
+  }
 });
-window.addEventListener('popstate', () => {
-  const p = new URLSearchParams(location.search);
-  S.q = p.get('q') || ''; S.tab = p.get('tab') || 'all'; $('q').value = S.q; run(false);
-});
+window.addEventListener('popstate', () => { const q0 = S.q; readURL(); q0 === S.q ? render() : run(false); });
 init();
 </script>
 </body>
